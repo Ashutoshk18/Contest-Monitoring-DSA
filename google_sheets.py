@@ -40,7 +40,13 @@ def get_students():
         if roll_no:
             unique_students[roll_no] = student
 
-    return list(unique_students.values())
+    students = list(unique_students.values())
+
+    students.sort(
+        key=lambda student: student["Name"].strip().lower()
+    )
+
+    return students
 
 
 def get_target_codechef_contest():
@@ -120,14 +126,15 @@ def save_codechef_history(results):
             continue
 
         rows_to_add.append([
-            result["Roll No"],
-            result["Name"],
-            result["Section"],
-            result["CodeChef ID"],
-            result["Contest"],
-            result["Participation"],
-            checked_at
-        ])
+        result["Roll No"],
+        result["Name"],
+        result["Section"],
+        result["CodeChef ID"],
+        result["Contest"],
+        result["Contest Date"],
+        result["Participation"],
+        checked_at
+    ])
 
     if rows_to_add:
         worksheet.append_rows(rows_to_add)
@@ -176,6 +183,7 @@ def save_leetcode_history(results):
             result["Section"],
             result["LeetCode ID"],
             result["Contest"],
+            result["Contest Date"],
             result["Participation"],
             checked_at
         ])

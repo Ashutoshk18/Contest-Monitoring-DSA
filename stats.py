@@ -2,7 +2,7 @@ from google_sheets import (
     get_students,
     get_history
 )
-
+from datetime import datetime
 
 def calculate_statistics():
 
@@ -23,30 +23,78 @@ def calculate_statistics():
             for record in history
             if str(record["Roll No"]).strip() == roll_no
         ]
-
+    
         # Keep only the latest record for each contest
         unique_contests = {}
-
+    
         for record in student_records:
+        
             contest = record["Contest"].strip()
+    
             unique_contests[contest] = record
-
-        recent_contests = list(unique_contests.values())[-3:]
-
-        if not recent_contests:
+    
+    
+        # Keep only records that have a contest date
+        dated_contests = [
+            record
+            for record in unique_contests.values()
+            if record.get("Contest Date", "").strip()
+        ]
+    
+    
+        if not dated_contests:
             return "⚪ No Data"
-
+    
+    
+        def parse_contest_date(record):
+        
+            date_string = record["Contest Date"].strip()
+    
+            # CodeChef:
+            # 2026-08-12T22:00:00+05:30
+            try:
+                return datetime.fromisoformat(
+                    date_string.replace("Z", "+00:00")
+                ).replace(tzinfo=None)
+    
+            except ValueError:
+                pass
+            
+            
+            # LeetCode:
+            # 2026-08-16 20:00:00
+            try:
+                return datetime.strptime(
+                    date_string,
+                    "%Y-%m-%d %H:%M:%S"
+                )
+    
+            except ValueError:
+                return datetime.min
+    
+    
+        # Sort by actual contest date
+        dated_contests.sort(
+            key=parse_contest_date
+        )
+    
+    
+        # Take the latest three contests
+        recent_contests = dated_contests[-3:]
+    
+    
         participated = sum(
             "Participated" in record["Participation"]
             for record in recent_contests
         )
-
+    
+    
         if participated == 0:
             return "🔴 Inactive"
-
+    
         elif participated < len(recent_contests):
             return "🟡 Low Activity"
-
+    
         else:
             return "🟢 Active"
 

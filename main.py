@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from google_sheets import (
     get_students,
     get_target_codechef_contest,
@@ -9,23 +10,72 @@ from google_sheets import (
     write_statistics
 )
 
-from codechef import participated_in as codechef_participated
-from leetcode import participated_in as leetcode_participated
-
+from codechef import (
+    get_contest as codechef_get_contest,
+    get_contest_details
+)
+from leetcode import (
+    get_contest as leetcode_get_contest,
+    get_contest_details as leetcode_get_contest_details
+)
 from stats import calculate_statistics
 
 
 
 students = get_students()
 
+
 codechef_contest = get_target_codechef_contest()
 leetcode_contest = get_target_leetcode_contest()
+
+codechef_contest_details = get_contest_details(
+    codechef_contest
+)
+
+leetcode_contest_details = leetcode_get_contest_details(
+    leetcode_contest
+)
+
+if leetcode_contest_details is None:
+    raise Exception(
+        f"Could not find LeetCode contest: {leetcode_contest}"
+    )
+
+leetcode_contest_date = leetcode_contest_details["date"]
+
+if codechef_contest_details is None:
+    raise Exception(
+        f"Could not find CodeChef contest: {codechef_contest}"
+    )
+
+codechef_contest_date = codechef_contest_details["end_date"]
+
+print(f"CodeChef contest: {codechef_contest}")
+print(f"CodeChef contest date: {codechef_contest_date}")
+print(f"LeetCode contest: {leetcode_contest}")
+print(f"Students found: {len(students)}\n")
 
 print(f"CodeChef contest: {codechef_contest}")
 print(f"LeetCode contest: {leetcode_contest}")
 print(f"Students found: {len(students)}\n")
 
+codechef_contest_details = get_contest_details(
+    codechef_contest
+)
 
+if codechef_contest_details:
+    codechef_contest_date = (
+        codechef_contest_details["end_date"]
+    )
+else:
+    codechef_contest_date = ""
+
+print(
+    f"CodeChef contest date: "
+    f"{codechef_contest_date}"
+)
+
+results = []
 results = []
 codechef_history = []
 leetcode_history = []
@@ -43,12 +93,12 @@ for student in students:
     if codechef_id:
 
         try:
-            participated = codechef_participated(
+            contest = codechef_get_contest(
                 codechef_id,
                 codechef_contest
             )
 
-            if participated:
+            if contest:
                 codechef_status = "✅ Participated"
             else:
                 codechef_status = "❌ Did not participate"
@@ -65,6 +115,7 @@ for student in students:
         "Section": student["Section"],
         "CodeChef ID": codechef_id,
         "Contest": codechef_contest,
+        "Contest Date": codechef_contest_date,
         "Participation": codechef_status
     })
 
@@ -76,16 +127,21 @@ for student in students:
     if leetcode_id:
 
         try:
-            participated = leetcode_participated(
+            contest = leetcode_get_contest(
                 leetcode_id,
                 leetcode_contest
             )
-
-            if participated:
-                leetcode_status = "✅ Participated"
+    
+            if contest:
+            
+                if contest["attended"]:
+                    leetcode_status = "✅ Participated"
+                else:
+                    leetcode_status = "❌ Did not participate"
+    
             else:
                 leetcode_status = "❌ Did not participate"
-
+    
         except Exception as error:
             leetcode_status = f"⚠️ {error}"
 
@@ -98,8 +154,9 @@ for student in students:
         "Section": student["Section"],
         "LeetCode ID": leetcode_id,
         "Contest": leetcode_contest,
+        "Contest Date": leetcode_contest_date,
         "Participation": leetcode_status
-    })
+    })  
 
 
     # -------------------------

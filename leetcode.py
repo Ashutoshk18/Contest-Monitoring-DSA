@@ -1,5 +1,5 @@
 import requests
-
+from datetime import datetime
 
 def get_contest_history(username):
 
@@ -78,6 +78,39 @@ def get_contest_history(username):
 
     return history
 
+def get_contest_details(target_contest):
+
+    url = "https://alfa-leetcode-api.onrender.com/contests"
+
+    response = requests.get(
+        url,
+        timeout=15
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    contests = data["allContests"]
+
+    target = target_contest.lower().strip()
+
+    for contest in contests:
+
+        if target == contest["title"].lower():
+
+            contest_date = datetime.fromtimestamp(
+                contest["startTime"]
+            ).strftime("%Y-%m-%d %H:%M:%S")
+
+            return {
+                "name": contest["title"],
+                "slug": contest["titleSlug"],
+                "start_time": contest["startTime"],
+                "date": contest_date
+            }
+
+    return None
 
 def participated_in(username, target_contest):
 
@@ -94,3 +127,20 @@ def participated_in(username, target_contest):
             return contest["attended"]
 
     return False
+
+def get_contest(username, target_contest):
+
+    contests = get_contest_history(username)
+
+    target_contest = target_contest.lower().strip()
+
+    for contest in contests:
+
+        contest_name = (
+            contest["contest"]["title"].lower()
+        )
+
+        if target_contest in contest_name:
+            return contest
+
+    return None
