@@ -94,17 +94,3 @@ def participated_in(username, target_contest):
             return contest["attended"]
 
     return False
-
-username = "seeker2310"
-
-target_contest = "Weekly Contest 499"
-
-result = participated_in(
-    username,
-    target_contest
-)
-
-if result:
-    print("Participated ✅")
-else:
-    print("Did not participate ❌")

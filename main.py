@@ -1,12 +1,18 @@
+import time
 from google_sheets import (
     get_students,
     get_target_codechef_contest,
     get_target_leetcode_contest,
-    write_results
+    write_results,
+    save_codechef_history,
+    save_leetcode_history,
+    write_statistics
 )
-import time
+
 from codechef import participated_in as codechef_participated
 from leetcode import participated_in as leetcode_participated
+
+from stats import calculate_statistics
 
 
 
@@ -21,6 +27,8 @@ print(f"Students found: {len(students)}\n")
 
 
 results = []
+codechef_history = []
+leetcode_history = []
 
 for student in students:
 
@@ -51,6 +59,15 @@ for student in students:
     else:
         codechef_status = "⚠️ ID not provided"
 
+    codechef_history.append({
+        "Roll No": student["Roll No"],
+        "Name": name,
+        "Section": student["Section"],
+        "CodeChef ID": codechef_id,
+        "Contest": codechef_contest,
+        "Participation": codechef_status
+    })
+
 
     # -------------------------
     # LeetCode
@@ -74,6 +91,15 @@ for student in students:
 
     else:
         leetcode_status = "⚠️ ID not provided"
+
+    leetcode_history.append({
+        "Roll No": student["Roll No"],
+        "Name": name,
+        "Section": student["Section"],
+        "LeetCode ID": leetcode_id,
+        "Contest": leetcode_contest,
+        "Participation": leetcode_status
+    })
 
 
     # -------------------------
@@ -104,4 +130,14 @@ for student in students:
 
 
 write_results(results)
+
+save_codechef_history(codechef_history)
+save_leetcode_history(leetcode_history)
+
+# Generate statistics
+statistics_results = calculate_statistics()
+
+write_statistics(statistics_results)
+
 print("\nResults successfully written to Google Sheets.")
+print("Statistics updated successfully.")
