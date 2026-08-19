@@ -202,6 +202,7 @@ def get_history(sheet_name):
 
     return worksheet.get_all_records()
 
+
 def write_statistics(results):
 
     spreadsheet = get_spreadsheet()
